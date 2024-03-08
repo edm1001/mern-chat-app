@@ -22,6 +22,14 @@ app.get('/test', (req, res) => {
     res.json('test OK')
 });
 
+app.get('/profile', (req,res) => {
+    const {token} = req.cookies;
+    jwt.verify(token, jwtSecret, {}, (err, userData) => {
+        if (err) throw err;
+        res.json(userData);
+    })
+})
+
 app.post('/register' ,async (req,res) => {
     const {username, password} = req.body;
     try {
@@ -30,6 +38,7 @@ app.post('/register' ,async (req,res) => {
             if (err) throw err;
             res.cookie('token', token).status(201).json({
                 _id: createdUser._id,
+                username,
             });
         })
         
