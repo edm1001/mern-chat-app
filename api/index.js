@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const bcrypt = require("js");
 const User = require("./models/User.js");
 const cookieParser = require("cookie-parser");
 
@@ -38,6 +38,15 @@ app.get("/profile", (req, res) => {
     res.status(401).json("no token");
   }
 });
+
+app.post('/login', async (req,res) => {
+  const {username, password} = req.body;
+  const foundUser = await User.find({
+    username, 
+    password: 
+  });
+})
+
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   try {
