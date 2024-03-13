@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Avatar from "../Components/Avatar";
 
 export default function Chat() {
   const [ws, setWs] = useState(null);
@@ -39,8 +40,12 @@ export default function Chat() {
           MERN Chat App
         </div>
         {Object.keys(onlinePeople).map((userId) => (
-          <div className="border-b border-gray-100 py-2" key={userId}>
-            {onlinePeople[userId]}
+          <div
+            className="border-b border-gray-100 py-2 flex items-center gap-2"
+            key={userId}
+          >
+            <Avatar username={onlinePeople[userId]} userId={userId} />
+            <span>{onlinePeople[userId]}</span>
           </div>
         ))}
       </div>
