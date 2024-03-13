@@ -1,8 +1,19 @@
+import { useEffect, useState } from "react";
+
 export default function Chat() {
+  const [ws, setWs] = useState(null);
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:4000');
+    setWs(ws);
+    ws.addEventListener('message', handleMessage)
+  }, []);
+  function handleMessage(e) {
+    console.log('new message', e);
+  }
   return (
     <div className="flex h-screen">
       <div className="bg-white w-1/3">contacts</div>
-      <div className=" flex flex-col bg-blue-300 w-2/3 p-2">
+      <div className=" flex flex-col bg-blue-100 w-2/3 p-2">
         <div className="flex-grow">
             messages with contact
             </div>
@@ -35,4 +46,4 @@ export default function Chat() {
       </div>
     </div>
   );
-}
+} 
