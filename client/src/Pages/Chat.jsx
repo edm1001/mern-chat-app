@@ -29,18 +29,18 @@ export default function Chat() {
     if ("online" in messageData) {
       showOnlinePeople(messageData.online);
     } else {
-      console.log({messageData})
+      setMessages(prev=> ([...prev, {isOur:false, text:messageData.text}]))
     }
   }
   function sendMessage(ev) {
     ev.preventDefault();
-    console.log('sending');
     ws.send(
       JSON.stringify({
-          recipient: selectedUserId,
-          text: newMessage,
+        recipient: selectedUserId,
+        text: newMessage,
       }));
-      setNewMessage('');
+    setNewMessage("");
+    setMessages((prev) => [...prev, {text: newMessage, isOur: true}]);
   }
 
   const friendsList = { ...onlinePeople };
@@ -79,6 +79,14 @@ export default function Chat() {
             </div>
           )}
         </div>
+        {!!selectedUserId && (
+          <div>
+            {messages.map(message => (
+              <div key={message._id}>{message.text}</div>
+            ))}
+          </div>
+        )}
+
         {/* message */}
         {!!selectedUserId && (
           <form className="flex gap-2" onSubmit={sendMessage}>
