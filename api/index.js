@@ -92,6 +92,7 @@ const server = app.listen(4000);
 
 const wss = new ws.WebSocketServer({ server });
 wss.on("connection", (connection, req) => {
+  //read username and id form for connection
   const cookies = req.headers.cookie;
   if (cookies) {
     const tokenCookieString = cookies
@@ -110,9 +111,26 @@ wss.on("connection", (connection, req) => {
       }
     }
   }
-  [...wss.clients].forEach(client => {
-    client.send(JSON.stringify({
-      online: [...wss.clients].map(c => ({userId:c.userId, username:c.username}))
-    }))
-  })
+  connection.on("message", (message) => {
+    const messageData = JSON.parse(message.toString());
+    const {recipient, text} = messageData;
+    if ( recipient && text) {
+      [...wss.clients]
+      .filter(c => c.userId === recipient)
+      .forEach(c => c.send(JSON.stringify({text})))
+    }
+  });
+
+  //notify online people when new user connects
+
+  [...wss.clients].forEach((client) => {
+    client.send(
+      JSON.stringify({
+        online: [...wss.clients].map((c) => ({
+          userId: c.userId,
+          username: c.username,
+        })),
+      })
+    );
+  });
 });
