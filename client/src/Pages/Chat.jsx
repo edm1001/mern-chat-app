@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import Avatar from "../Components/Avatar";
 import Logo from "../Components/Logo";
 import { UserContext } from "../UserContext";
+import {uniqBy} from 'lodash';
 
 export default function Chat() {
   const [ws, setWs] = useState(null);
@@ -26,9 +27,10 @@ export default function Chat() {
 
   function handleMessage(ev) {
     const messageData = JSON.parse(ev.data);
+    console.log({ev, messageData});
     if ("online" in messageData) {
       showOnlinePeople(messageData.online);
-    } else {
+    } else if ('text' in messageData) {
       setMessages(prev=> ([...prev, {isOur:false, text:messageData.text}]))
     }
   }
@@ -45,6 +47,8 @@ export default function Chat() {
 
   const friendsList = { ...onlinePeople };
   delete friendsList[id];
+
+  const stopMessageDuplicates = uniqBy(messages,'id');
 
   return (
     <div className="flex h-screen">
@@ -81,7 +85,7 @@ export default function Chat() {
         </div>
         {!!selectedUserId && (
           <div>
-            {messages.map(message => (
+            {stopMessageDuplicates.map(message => (
               <div key={message._id}>{message.text}</div>
             ))}
           </div>
