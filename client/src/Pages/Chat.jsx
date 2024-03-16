@@ -13,6 +13,7 @@ export default function Chat() {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const divUnderMessages = useRef();
+
   useEffect(() => {
     connectToWs();
   }, []);
@@ -61,7 +62,7 @@ export default function Chat() {
         text: newMessage,
         sender: id,
         recipient: selectedUserId,
-        id: Date.now(),
+        _id: Date.now(),
       },
     ]));
   }
@@ -74,14 +75,16 @@ export default function Chat() {
 
   useEffect(() => {
     if(selectedUserId) {
-      axios.get('/messages/'+selectedUserId).then();
+      axios.get('/messages/'+selectedUserId).then(res => {
+        setMessages(res.data);
+      });
     }
   }, [selectedUserId])
 
   const friendsList = { ...onlinePeople };
   delete friendsList[id];
 
-  const stopMessageDuplicates = uniqBy(messages, "id");
+  const stopMessageDuplicates = uniqBy(messages, "_id");
 
   return (
     <div className="flex h-screen">
@@ -132,8 +135,6 @@ export default function Chat() {
                         : " bg-white text-gray-500 ")
                     }
                   >
-                    sender:{message.sender} <br />
-                    myid:{id} <br />
                     {message.text}
                   </div>
                 </div>

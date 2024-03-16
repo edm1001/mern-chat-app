@@ -50,7 +50,7 @@ app.get("/messages/:userId", async (req, res) => {
     const messages = await Message.find({
       sender: {$in:[userId, ownUserId]},
       recipient:{$in:[userId,ownUserId]}
-    }).sort({createdAt:-1}).exec();
+    }).sort({createdAt:1});
     res.json(messages);
   });
 
@@ -154,7 +154,7 @@ wss.on("connection", (connection, req) => {
               text,
               sender: connection.userId,
               recipient,
-              id: messageDoc._id,
+              _id: messageDoc._id,
             })
           )
         );
@@ -162,7 +162,6 @@ wss.on("connection", (connection, req) => {
   });
 
   //notify online people when new user connects
-
   [...wss.clients].forEach((client) => {
     client.send(
       JSON.stringify({
