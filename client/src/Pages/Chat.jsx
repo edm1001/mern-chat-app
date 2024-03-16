@@ -1,8 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import Avatar from "../Components/Avatar";
 import Logo from "../Components/Logo";
 import { UserContext } from "../UserContext";
-import {uniqBy} from 'lodash';
+import { uniqBy } from "lodash";
 
 export default function Chat() {
   const [ws, setWs] = useState(null);
@@ -11,12 +11,13 @@ export default function Chat() {
   const { id } = useContext(UserContext);
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
-
+  const divUnderMessages = useRef();
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:4000");
     setWs(ws);
     ws.addEventListener("message", handleMessage);
   }, []);
+
   function showOnlinePeople(peopleArray) {
     const people = {};
     peopleArray.forEach(({ userId, username }) => {
@@ -27,11 +28,11 @@ export default function Chat() {
 
   function handleMessage(ev) {
     const messageData = JSON.parse(ev.data);
-    console.log({ev, messageData});
+    console.log({ ev, messageData });
     if ("online" in messageData) {
       showOnlinePeople(messageData.online);
-    } else if ('text' in messageData) {
-      setMessages(prev=> ([...prev, {isOur:false, text:messageData.text}]))
+    } else if ("text" in messageData) {
+      setMessages((prev) => [...prev, { ...messageData }]);
     }
   }
   function sendMessage(ev) {
@@ -40,15 +41,30 @@ export default function Chat() {
       JSON.stringify({
         recipient: selectedUserId,
         text: newMessage,
-      }));
+      })
+    );
     setNewMessage("");
-    setMessages((prev) => [...prev, {text: newMessage, isOur: true}]);
+    setMessages(prev => ([
+      ...prev,
+      {
+        text: newMessage,
+        sender: id,
+        recipient: selectedUserId,
+        id: Date.now(),
+      },
+    ]));
   }
+  useEffect(() => {
+    const div = divUnderMessages.current;
+    if(div) {
+      div.scrollIntoView({behavior:'smooth', block:'end'});
+    }
+  }, [messages]);
 
   const friendsList = { ...onlinePeople };
   delete friendsList[id];
 
-  const stopMessageDuplicates = uniqBy(messages,'id');
+  const stopMessageDuplicates = uniqBy(messages, "id");
 
   return (
     <div className="flex h-screen">
@@ -84,10 +100,29 @@ export default function Chat() {
           )}
         </div>
         {!!selectedUserId && (
-          <div>
-            {stopMessageDuplicates.map(message => (
-              <div key={message._id}>{message.text}</div>
-            ))}
+          <div className="relative h-full ">
+            <div className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
+              {stopMessageDuplicates.map((message) => (
+                <div
+                  key={message._id}
+                  className={(message.sender === id ? "text-right" : "text-left")}
+                >
+                  <div
+                    className={
+                      "text-left inline-block p-2 my-2 rounded-md text-sm" +
+                      (message.sender === id
+                        ? " bg-blue-500 text-white "
+                        : " bg-white text-gray-500 ")
+                    }
+                  >
+                    sender:{message.sender} <br />
+                    myid:{id} <br />
+                    {message.text}
+                  </div>
+                </div>
+              ))}
+              <div ref={divUnderMessages}> </div>
+            </div>
           </div>
         )}
 
@@ -96,7 +131,7 @@ export default function Chat() {
           <form className="flex gap-2" onSubmit={sendMessage}>
             <input
               value={newMessage}
-              onChange={(ev) => setNewMessage(ev.target.value)}
+              onChange={ev => setNewMessage(ev.target.value)}
               type="text"
               placeholder="Type message here"
               className="bg-white flex-grow border rounded-sm p-2"
