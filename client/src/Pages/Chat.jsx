@@ -8,6 +8,7 @@ import axios from "axios";
 export default function Chat() {
   const [ws, setWs] = useState(null);
   const [onlinePeople, setOnlinePeople] = useState({});
+  const [offlinePeople, setOfflinePeople] = useState({});
   const [selectedUserId, setSelectedUserId] = useState(null);
   const { id } = useContext(UserContext);
   const [newMessage, setNewMessage] = useState("");
@@ -74,6 +75,19 @@ export default function Chat() {
   }, [messages]);
 
   useEffect(() => {
+    axios.get('/people').then(res => {
+      const offlinePeopleArr = res.data
+      .filter(p => p._id !== id)
+      .filter(p => !Object.keys(onlinePeople).includes(p._id));
+      const offlinePeople = {};
+      offlinePeopleArr.forEach(p => {
+      offlinePeople[p._id] =p;
+      })
+      setOfflinePeople(offlinePeople);      
+    })
+  }, [onlinePeople])
+
+  useEffect(() => {
     if(selectedUserId) {
       axios.get('/messages/'+selectedUserId).then(res => {
         setMessages(res.data);
@@ -103,7 +117,7 @@ export default function Chat() {
               <div className="w-1 bg-blue-500 h-12 rounded-r-md"></div>
             )}
             <div className="flex gap-2 py-2 pl-4"></div>
-            <Avatar username={onlinePeople[userId]} userId={userId} />
+            <Avatar online={true} username={onlinePeople[userId]} userId={userId} />
             <span className="mr-2 text-sm text-gray-600 flex items-center">
               {onlinePeople[userId]}
             </span>
