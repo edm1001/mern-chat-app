@@ -1,9 +1,10 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import Avatar from "../Components/Avatar";
+// import Avatar from "../Components/Avatar";
 import Logo from "../Components/Logo";
 import { UserContext } from "../UserContext";
 import { uniqBy } from "lodash";
 import axios from "axios";
+import Contact from "../Components/Contact";
 
 export default function Chat() {
   const [ws, setWs] = useState(null);
@@ -23,12 +24,12 @@ export default function Chat() {
     const ws = new WebSocket("ws://localhost:4000");
     setWs(ws);
     ws.addEventListener("message", handleMessage);
-    ws.addEventListener('close', () => {
+    ws.addEventListener("close", () => {
       setTimeout(() => {
-        console.log('Disconnected, attempting to reconnect.');
+        console.log("Disconnected, attempting to reconnect.");
         connectToWs();
       }, 1000);
-    })
+    });
   }
 
   function showOnlinePeople(peopleArray) {
@@ -57,7 +58,7 @@ export default function Chat() {
       })
     );
     setNewMessage("");
-    setMessages(prev => ([
+    setMessages((prev) => [
       ...prev,
       {
         text: newMessage,
@@ -65,38 +66,38 @@ export default function Chat() {
         recipient: selectedUserId,
         _id: Date.now(),
       },
-    ]));
+    ]);
   }
   useEffect(() => {
     const div = divUnderMessages.current;
-    if(div) {
-      div.scrollIntoView({behavior:'smooth', block:'end'});
+    if (div) {
+      div.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   }, [messages]);
 
   useEffect(() => {
-    axios.get('/people').then(res => {
+    axios.get("/people").then((res) => {
       const offlinePeopleArr = res.data
-      .filter(p => p._id !== id)
-      .filter(p => !Object.keys(onlinePeople).includes(p._id));
+        .filter((p) => p._id !== id)
+        .filter((p) => !Object.keys(onlinePeople).includes(p._id));
       const offlinePeople = {};
-      offlinePeopleArr.forEach(p => {
-      offlinePeople[p._id] =p;
-      })
-      setOfflinePeople(offlinePeople);      
-    })
-  }, [onlinePeople])
+      offlinePeopleArr.forEach((p) => {
+        offlinePeople[p._id] = p;
+      });
+      setOfflinePeople(offlinePeople);
+    });
+  }, [onlinePeople]);
 
   useEffect(() => {
-    if(selectedUserId) {
-      axios.get('/messages/'+selectedUserId).then(res => {
+    if (selectedUserId) {
+      axios.get("/messages/" + selectedUserId).then((res) => {
         setMessages(res.data);
       });
     }
-  }, [selectedUserId])
+  }, [selectedUserId]);
 
-  const friendsList = { ...onlinePeople };
-  delete friendsList[id];
+  const onlineFriendsList = { ...onlinePeople };
+  delete onlineFriendsList[id];
 
   const stopMessageDuplicates = uniqBy(messages, "_id");
 
@@ -104,24 +105,27 @@ export default function Chat() {
     <div className="flex h-screen">
       <div className="bg-white w-1/3">
         <Logo />
-        {Object.keys(friendsList).map((userId) => (
-          <div
+        {/* look for online people */}
+        {Object.keys(onlineFriendsList).map(userId => (
+          <Contact
+            id={userId}
+            online={true}
+            username={onlineFriendsList[userId].username}
             key={userId}
             onClick={() => setSelectedUserId(userId)}
-            className={
-              "border-b border-gray-100 flex items-center gap-2 cursor-pointer " +
-              (userId === selectedUserId ? "bg-blue-50" : "")
-            }
-          >
-            {userId === selectedUserId && (
-              <div className="w-1 bg-blue-500 h-12 rounded-r-md"></div>
-            )}
-            <div className="flex gap-2 py-2 pl-4"></div>
-            <Avatar online={true} username={onlinePeople[userId]} userId={userId} />
-            <span className="mr-2 text-sm text-gray-600 flex items-center">
-              {onlinePeople[userId]}
-            </span>
-          </div>
+            selected={userId === selectedUserId}
+          />
+        ))}
+        {/* look for offline people */}
+        {Object.keys(offlinePeople).map(userId => (
+          <Contact
+            id={userId}
+            online={false}
+            username={offlinePeople[userId].username}
+            key={userId}
+            onClick={() => setSelectedUserId(userId)}
+            selected={userId === selectedUserId}
+          />
         ))}
       </div>
 
@@ -139,7 +143,7 @@ export default function Chat() {
               {stopMessageDuplicates.map((message) => (
                 <div
                   key={message._id}
-                  className={(message.sender === id ? "text-right" : "text-left")}
+                  className={message.sender === id ? "text-right" : "text-left"}
                 >
                   <div
                     className={
@@ -163,7 +167,7 @@ export default function Chat() {
           <form className="flex gap-2" onSubmit={sendMessage}>
             <input
               value={newMessage}
-              onChange={ev => setNewMessage(ev.target.value)}
+              onChange={(ev) => setNewMessage(ev.target.value)}
               type="text"
               placeholder="Type message here"
               className="bg-white flex-grow border rounded-sm p-2"
