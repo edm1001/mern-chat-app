@@ -86,7 +86,7 @@ export default function Chat() {
       });
       setOfflinePeople(offlinePeople);
     });
-  }, [onlinePeople]);
+  }, [onlinePeople, id]);
 
   useEffect(() => {
     if (selectedUserId) {
@@ -108,10 +108,10 @@ export default function Chat() {
         {/* look for online people */}
         {Object.keys(onlineFriendsList).map(userId => (
           <Contact
+            key={userId}
             id={userId}
             online={true}
-            username={onlineFriendsList[userId].username}
-            key={userId}
+            username={onlineFriendsList[userId]}
             onClick={() => setSelectedUserId(userId)}
             selected={userId === selectedUserId}
           />
@@ -119,10 +119,10 @@ export default function Chat() {
         {/* look for offline people */}
         {Object.keys(offlinePeople).map(userId => (
           <Contact
+            key={userId}
             id={userId}
             online={false}
             username={offlinePeople[userId].username}
-            key={userId}
             onClick={() => setSelectedUserId(userId)}
             selected={userId === selectedUserId}
           />
