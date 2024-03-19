@@ -11,7 +11,7 @@ export default function Chat() {
   const [onlinePeople, setOnlinePeople] = useState({});
   const [offlinePeople, setOfflinePeople] = useState({});
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const {username,id,setId,setUsername} = useContext(UserContext);
+  const { username, id, setId, setUsername } = useContext(UserContext);
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const divUnderMessages = useRef();
@@ -41,10 +41,11 @@ export default function Chat() {
   }
 
   function logout() {
-    axios.post('/logout').then(()=> {
+    axios.post("/logout").then(() => {
+      setWs(null);
       setId(null);
       setUsername(null);
-    })
+    });
   }
 
   function handleMessage(ev) {
@@ -136,14 +137,30 @@ export default function Chat() {
             />
           ))}
         </div>
-        <div className="p-2 text-center">
+        <div className="p-2 text-center flex items-center justify-center">
+          <span className="mr-2 text-sm text-gray-600 flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="w-4 h-4"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
+                clipRule="evenodd"
+              />
+            </svg>
+
+            {username}
+          </span>
           <button
-          onClick={logout} 
-          className="text-sm bg-blue-100 py-1 px-2 text-gray-400 border rounded-sm"
+            onClick={logout}
+            className="text-sm py-1 px-2 bg-blue-400 text-gray-400 border rounded-sm"
           >
             logout
-            </button>
-          </div>
+          </button>
+        </div>
       </div>
       <div className=" flex flex-col bg-blue-100 w-2/3 p-2 ">
         <div className="flex-grow">
@@ -188,6 +205,9 @@ export default function Chat() {
               placeholder="Type message here"
               className="bg-white flex-grow border rounded-sm p-2"
             />
+            <button type="button">
+              
+            </button>
             <button
               type="submit"
               className="bg-blue-500 p-2 text-white rounded-sm"
