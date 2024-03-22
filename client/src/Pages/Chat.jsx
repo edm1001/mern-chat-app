@@ -64,7 +64,7 @@ export default function Chat() {
         recipient: selectedUserId,
         text: newMessage,
         file
-      })
+      }) 
 
     );
     setNewMessage("");
