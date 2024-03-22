@@ -54,7 +54,9 @@ export default function Chat() {
     if ("online" in messageData) {
       showOnlinePeople(messageData.online);
     } else if ("text" in messageData) {
-      setMessages((prev) => [...prev, { ...messageData }]);
+      if (messageData.sender === selectedUserId) {
+        setMessages((prev) => [...prev, { ...messageData }]);
+      }
     }
   }
   function sendMessage(ev, file = null) {
@@ -66,16 +68,19 @@ export default function Chat() {
         file,
       })
     );
-    setNewMessage("");
-    setMessages((prev) => [
-      ...prev,
-      {
+    if (file) {
+      axios.get('/messages/'+selectedUserId).then(res => {
+        setMessages(res.data);
+      });
+    } else {
+      setNewMessage('');
+      setMessages(prev => ([...prev,{
         text: newMessage,
         sender: id,
         recipient: selectedUserId,
         _id: Date.now(),
-      },
-    ]);
+      }]));
+    }
   }
   function sendFile(ev) {
     const reader = new FileReader();
