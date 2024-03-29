@@ -69,17 +69,20 @@ export default function Chat() {
       })
     );
     if (file) {
-      axios.get('/messages/'+selectedUserId).then(res => {
+      axios.get("/messages/" + selectedUserId).then((res) => {
         setMessages(res.data);
       });
     } else {
-      setNewMessage('');
-      setMessages(prev => ([...prev,{
-        text: newMessage,
-        sender: id,
-        recipient: selectedUserId,
-        _id: Date.now(),
-      }]));
+      setNewMessage("");
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: newMessage,
+          sender: id,
+          recipient: selectedUserId,
+          _id: Date.now(),
+        },
+      ]);
     }
   }
   function sendFile(ev) {
@@ -111,7 +114,7 @@ export default function Chat() {
       });
       setOfflinePeople(offlinePeople);
     });
-  }, [onlinePeople, id]);
+  }, [onlinePeople]);
 
   useEffect(() => {
     if (selectedUserId) {
@@ -168,7 +171,6 @@ export default function Chat() {
                 clipRule="evenodd"
               />
             </svg>
-
             {username}
           </span>
           <button

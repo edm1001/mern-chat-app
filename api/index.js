@@ -9,18 +9,17 @@ const User = require("./models/User.js");
 const Message = require("./models/Message.js");
 const cookieParser = require("cookie-parser");
 const ws = require("ws");
-const fs = require('fs');
+const fs = require("fs");
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URL);
 const bcryptSalt = bcrypt.genSaltSync(10);
 const jwtSecret = process.env.JWT_SECRET;
 const app = express();
-app.use('/uploads', express.static(__dirname + '/uploads'));
+app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-  cors({
+app.use(cors({
     credentials: true,
     origin: process.env.CLIENT_URL,
   })
@@ -34,8 +33,8 @@ async function getUserDatafromRequest(req) {
         if (err) throw err;
         resolve(userData);
       });
-    }else {
-      reject('no token');
+    } else {
+      reject("no token");
     }
   });
 }
@@ -45,19 +44,19 @@ app.get("/test", (req, res) => {
 });
 
 app.get("/messages/:userId", async (req, res) => {
-    const { userId } = req.params;
-    const userData = await getUserDatafromRequest(req);
-    const ownUserId = userData.userId;
-    const messages = await Message.find({
-      sender: {$in:[userId, ownUserId]},
-      recipient:{$in:[userId,ownUserId]}
-    }).sort({createdAt:1});
-    res.json(messages);
-  });
+  const { userId } = req.params;
+  const userData = await getUserDatafromRequest(req);
+  const ownUserId = userData.userId;
+  const messages = await Message.find({
+    sender: {$in:[userId, ownUserId]},
+    recipient: {$in:[userId, ownUserId]},
+  }).sort({ createdAt: 1 });
+  res.json(messages);
+});
 
-app.get('/people', async (req, res) => {
-  const users = await User.find({}, {'_id':1, username:1});
-  
+app.get("/people", async (req, res) => {
+  const users = await User.find({}, { _id: 1, username: 1 });
+  res.json(users);
 });
 
 app.get("/profile", (req, res) => {
@@ -83,7 +82,7 @@ app.post("/login", async (req, res) => {
         jwtSecret,
         {},
         (err, token) => {
-          res.cookie("token", token, { sameSite:"none", secure: true }).json({
+          res.cookie("token", token, { sameSite: "none", secure: true }).json({
             id: foundUser._id,
           });
         }
@@ -92,9 +91,9 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post('/logout', (req,res) => {
-  res.cookie("token", '', { sameSite:"none", secure: true }).json('ok');
-})
+app.post("/logout", (req, res) => {
+  res.cookie("token", "", { sameSite: "none", secure: true }).json("ok");
+});
 
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
@@ -104,18 +103,11 @@ app.post("/register", async (req, res) => {
       username: username,
       password: hashedPassword,
     });
-    jwt.sign(
-      { userId: createdUser._id, username },
-      jwtSecret,
-      {},
-      (err, token) => {
+    jwt.sign({ userId: createdUser._id, username }, jwtSecret, {}, (err, token) => {
         if (err) throw err;
         res
           .cookie("token", token, { sameSite: "none", secure: true })
-          .status(201)
-          .json({
-            id: createdUser._id,
-          });
+          .status(201).json({id: createdUser._id});
       }
     );
   } catch (err) {
@@ -128,7 +120,6 @@ const server = app.listen(4000);
 
 const wss = new ws.WebSocketServer({ server });
 wss.on("connection", (connection, req) => {
-
   function notifyAboutOnlinePeople() {
     [...wss.clients].forEach((client) => {
       client.send(
@@ -144,19 +135,20 @@ wss.on("connection", (connection, req) => {
 
   connection.isAlive = true;
 
-  connection.timer = setInterval(()=> {
+  connection.timer = setInterval(() => {
     connection.ping();
     connection.deathTimer = setTimeout(() => {
       connection.isAlive = false;
-      clearInterval(connection.timer)
+      clearInterval(connection.timer);
       connection.terminate();
       notifyAboutOnlinePeople();
     }, 1000);
   }, 5000);
 
-  connection.on('pong', () => {
-    clearTimeout(connection.deathTimer)
-  })
+  connection.on("pong", () => {
+    clearTimeout(connection.deathTimer);
+  });
+
   //read username and id form for connection
   const cookies = req.headers.cookie;
   if (cookies) {
@@ -179,17 +171,17 @@ wss.on("connection", (connection, req) => {
 
   connection.on("message", async (message) => {
     const messageData = JSON.parse(message.toString());
-    const {recipient, text, file} = messageData;
+    const { recipient, text, file } = messageData;
     let filename = null;
     if (file) {
-      const parts = file.name.split('.');
+      const parts = file.name.split(".");
       const ext = parts[parts.length - 1];
-      filename = Date.now() + '.'+ext;
-      const path = __dirname + '/uploads/'+ filename;
-      const bufferData = new Buffer(file.data.split(',')[1], 'base64');
+      filename = Date.now() + "." + ext;
+      const path = __dirname + "/uploads/" + filename;
+      const bufferData = new Buffer(file.data.split(",")[1], "base64");
       fs.writeFile(path, bufferData, () => {
-        console.log('file saved');
-      })
+        console.log("file saved"+path);
+      });
     }
     if (recipient && (text || file)) {
       const messageDoc = await Message.create({
@@ -206,18 +198,12 @@ wss.on("connection", (connection, req) => {
               text,
               sender: connection.userId,
               recipient,
-              file: file ? filename: null,
+              file: file ? filename : null,
               _id: messageDoc._id,
-            })
-          )
-        );
+            })));
     }
   });
 
   //notify online people when new user connects
   notifyAboutOnlinePeople();
 });
-
-wss.on('close', () => {
-
-})

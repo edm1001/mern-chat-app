@@ -5,12 +5,12 @@ import { UserContext } from "../UserContext";
 export default function RegisterAndLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [RegisterOrLogin, setRegisterOrLogin] = useState('login');
+  const [RegisterOrLogin, setRegisterOrLogin] = useState("login");
   const { setUsername: setLoggedInUsername, setId } = useContext(UserContext);
 
   async function handleSubmit(ev) {
     ev.preventDefault();
-    const url = RegisterOrLogin === 'register' ? 'register' : 'login';
+    const url = RegisterOrLogin === "register" ? "register" : "login";
     const { data } = await axios.post(url, { username, password });
     setLoggedInUsername(username);
     setId(data.id);
@@ -33,26 +33,32 @@ export default function RegisterAndLogin() {
           className="block w-full rounded-sm p-2 mb-2 border"
         />
         <button className="bg-blue-500 text-white block w-full rounded-sm p-2">
-          {RegisterOrLogin === 'register' ? 'Register' : 'Login'}
+          {RegisterOrLogin === "register" ? "Register" : "Login"}
         </button>
 
         <div className="text-center mt-2">
-          {RegisterOrLogin === 'register' && (
+          {RegisterOrLogin === "register" && (
             <div>
-            Already a member? 
-          <button className='ml-1' onClick={() => setRegisterOrLogin('login')}>
-            Login here
-          </button>
-        </div>
-        )}
-        {RegisterOrLogin === 'login' && (
-          <div>
-            Dont have an account?
-          <button className='ml-1' onClick={() => setRegisterOrLogin('register')}>
-            Register here
-            </button>
-          </div>
-        )}
+              Already a member?
+              <button
+                className="ml-1"
+                onClick={() => setRegisterOrLogin("login")}
+              >
+                Login here
+              </button>
+            </div>
+          )}
+          {RegisterOrLogin === "login" && (
+            <div>
+              Dont have an account?
+              <button
+                className="ml-1"
+                onClick={() => setRegisterOrLogin("register")}
+              >
+                Register here
+              </button>
+            </div>
+          )}
         </div>
       </form>
     </div>

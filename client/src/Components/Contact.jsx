@@ -1,6 +1,6 @@
 import Avatar from "./Avatar";
 
-export default function Contact({id,username,onClick,selected,online }) {
+export default function Contact({ id, username, onClick, selected, online }) {
   return (
     <div
       key={id}
